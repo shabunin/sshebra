@@ -109,7 +109,7 @@ func (b *Sshebra) authHandler(ctx gssh.Context, key gssh.PublicKey) bool {
 
 func (b *Sshebra) ListenAndServe() error {
 	return gssh.ListenAndServe(
-		":4242",
+		b.ListenAddr,
 		b.handler,
 		gssh.HostKeyFile(b.ServerPrivateKeyPath),
 		gssh.PublicKeyAuth(b.authHandler),
