@@ -38,7 +38,7 @@ func (c *WhoamiCommand) Execute(ctx context.Context, args []string) error {
 type FlagCommand struct{}
 
 func (c *FlagCommand) Execute(ctx context.Context, args []string) error {
-	flagCmd := flag.NewFlagSet("foo", flag.ExitOnError)
+	flagCmd := flag.NewFlagSet("foo", flag.ContinueOnError)
 	enableP := flagCmd.Bool("enable", false, "enable")
 	nameP := flagCmd.String("name", "", "name")
 	err := flagCmd.Parse(args)
