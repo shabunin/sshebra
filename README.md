@@ -2,7 +2,9 @@
 
 ssh-server with custom commands inside.
 
-Inspired by https://github.com/shazow/ssh-chat and https://github.com/quackduck/devzat.
+Inspired by:
+* [github.com/shazow/ssh-chat](https://github.com/shazow/ssh-chat)
+* [github.com/quackduck/devzat](https://github.com/quackduck/devzat)
 
 ## Description
 
@@ -17,10 +19,9 @@ ssh doesntmatter@localhost -p 4242 -i ./mykey
 
 ## Features
 
-(https://github.com/gliderlabs/ssh)[github.com/gliderlabs/ssh] features:
+[github.com/gliderlabs/ssh](https://github.com/gliderlabs/ssh) features:
  - [x] PTY terminal 
  - [x] Password auth
  - [x] Pubkey authentication
  - [x] Subsystem handling
-
 
