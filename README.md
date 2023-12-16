@@ -17,6 +17,10 @@ ssh doesntmatter@localhost -p 4242 -i ./mykey
 
 ## Features
 
+(https://github.com/gliderlabs/ssh)[github.com/gliderlabs/ssh] features:
  - [x] PTY terminal 
+ - [x] Password auth
  - [x] Pubkey authentication
- - [ ] Password auth
+ - [x] Subsystem handling
+
+

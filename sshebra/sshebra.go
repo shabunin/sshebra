@@ -12,7 +12,6 @@ import (
 )
 
 type Sshebra struct {
-	Authenticator        func(gssh.Context, gssh.PublicKey) (string, error)
 	cmds map[string]commands.Command
 }
 
@@ -22,12 +21,8 @@ func (b *Sshebra) SessionHandler(s gssh.Session) {
 		io.WriteString(s, "raw commands are not supported")
 		return
 	}
-	identity, ok := s.Context().Value("ssh-identity").(string)
-	if !ok {
-		return
-	}
 
-	io.WriteString(s, fmt.Sprintf("hello, %s\n", identity))
+	io.WriteString(s, fmt.Sprintf("hello, %s\n", s.User()))
 
 	var ctx context.Context
 	var cancel context.CancelFunc
@@ -38,10 +33,10 @@ func (b *Sshebra) SessionHandler(s gssh.Session) {
 	ctx = context.WithValue(ctx,
 		"ssh-close", func() { s.Close() })
 	ctx = context.WithValue(ctx,
-		"ssh-identity", identity)
+		"ssh-identity", s.User())
 
 	term := terminal.NewTerminal(s,
-		fmt.Sprintf("%s> ", identity))
+		fmt.Sprintf("/%s/ > ", s.User()))
 
 	ctx = context.WithValue(ctx,
 		"terminal", term)
@@ -69,9 +64,12 @@ func (b *Sshebra) SessionHandler(s gssh.Session) {
 		}
 
 		args, err := shlex.Split(line)
-		if err != nil || len(args) == 0 {
+		if err != nil {
 			io.WriteString(term,
 				fmt.Errorf("splitting args: %w\n", err).Error())
+			continue
+		}
+		if len(args) == 0 {
 			continue
 		}
 		cmdName := args[0]
@@ -93,15 +91,6 @@ func (b *Sshebra) SessionHandler(s gssh.Session) {
 				fmt.Errorf("command returned error: %w", err).Error())
 		}
 	}
-}
-
-func (b *Sshebra) AuthHandler(ctx gssh.Context, key gssh.PublicKey) bool {
-	identity, err := b.Authenticator(ctx, key)
-	if err != nil {
-		return false
-	}
-	ctx.SetValue("ssh-identity", identity)
-	return true
 }
 
 func (b *Sshebra) RegisterCommand(name string, cmd commands.Command) {

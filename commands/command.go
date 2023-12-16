@@ -38,18 +38,21 @@ func (c *WhoamiCommand) Execute(ctx context.Context, args []string) error {
 type FlagCommand struct{}
 
 func (c *FlagCommand) Execute(ctx context.Context, args []string) error {
-	flagCmd := flag.NewFlagSet("foo", flag.ContinueOnError)
-	enableP := flagCmd.Bool("enable", false, "enable")
-	nameP := flagCmd.String("name", "", "name")
-	err := flagCmd.Parse(args)
-	if err != nil {
-		return fmt.Errorf("error parsing flags: %w", err)
-	}
 
 	term, ok := ctx.Value("terminal").(*terminal.Terminal)
 	if !ok {
 		return errors.New("error getting ssh terminal output")
 	}
+
+	flagCmd := flag.NewFlagSet("foo", flag.ContinueOnError)
+	enableP := flagCmd.Bool("enable", false, "enable")
+	nameP := flagCmd.String("name", "", "name")
+	flagCmd.SetOutput(term)
+	err := flagCmd.Parse(args)
+	if err != nil {
+		return fmt.Errorf("error parsing flags: %w", err)
+	}
+
 	io.WriteString(term, fmt.Sprintf("parsed flags:\n"))
 	io.WriteString(term, fmt.Sprintf("  - enable: \t%v\n", *enableP))
 	io.WriteString(term, fmt.Sprintf("  - name: \t%v\n", *nameP))

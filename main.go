@@ -2,9 +2,7 @@ package main
 
 import (
 	"bytes"
-	"errors"
 	"io"
-	"fmt"
 	"log"
 	"os"
 
@@ -39,23 +37,27 @@ func sftpHandler(sess gssh.Session) {
 	log.Println("bye from sftp handler")
 }
 
-func main() {
-	b := &sshebra.Sshebra{
-		Authenticator: func(ctx gssh.Context, key gssh.PublicKey) (string, error) {
-			mykey, err := os.ReadFile("./mykey.pub")
-			if err != nil {
-				return "", errors.New("moew")
-			}
-			pk, _, _, _, err := gssh.ParseAuthorizedKey(mykey)
-			if err != nil {
-				return "", errors.New("moew")
-			}
-			if !bytes.Equal(key.Marshal(), pk.Marshal()) {
-				return "", errors.New("moew")
-			}
-			return "root", nil
-		},
+func pubkeyAuth(ctx gssh.Context, key gssh.PublicKey) bool {
+	mykey, err := os.ReadFile("./mykey.pub")
+	if err != nil {
+		log.Printf("reading file: %w\n", err)
+		return false
 	}
+	pk, _, _, _, err := gssh.ParseAuthorizedKey(mykey)
+	if err != nil {
+		log.Printf("parse auth key: %\n", err)
+		return false
+	}
+	if !bytes.Equal(key.Marshal(), pk.Marshal()) {
+		return false
+	}
+	return true
+}
+func passwordAuth(ctx gssh.Context, password string) bool {
+	return password == "parole"
+}
+func main() {
+	b := &sshebra.Sshebra{}
 	b.RegisterCommand("whoami", &commands.WhoamiCommand{})
 	b.RegisterCommand("exit", &commands.ExitCommand{})
 	b.RegisterCommand("flag", &commands.FlagCommand{})
@@ -66,7 +68,8 @@ func main() {
 		SubsystemHandlers: map[string]gssh.SubsystemHandler{
 			"sftp": sftpHandler,
 		},
-		PublicKeyHandler: b.AuthHandler,
+		PublicKeyHandler: pubkeyAuth,
+		PasswordHandler: passwordAuth,
 	}
 	gssh.HostKeyFile("./mykey")(s)
 
