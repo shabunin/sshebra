@@ -20,4 +20,3 @@ ssh doesntmatter@localhost -p 4242 -i ./mykey
  - [x] PTY terminal 
  - [x] Pubkey authentication
  - [ ] Password auth
-

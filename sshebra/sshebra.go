@@ -12,14 +12,11 @@ import (
 )
 
 type Sshebra struct {
-	ListenAddr           string
-	ServerPrivateKeyPath string
 	Authenticator        func(gssh.Context, gssh.PublicKey) (string, error)
-
 	cmds map[string]commands.Command
 }
 
-func (b *Sshebra) handler(s gssh.Session) {
+func (b *Sshebra) SessionHandler(s gssh.Session) {
 	defer s.Close()
 	if s.RawCommand() != "" {
 		io.WriteString(s, "raw commands are not supported")
@@ -98,22 +95,13 @@ func (b *Sshebra) handler(s gssh.Session) {
 	}
 }
 
-func (b *Sshebra) authHandler(ctx gssh.Context, key gssh.PublicKey) bool {
+func (b *Sshebra) AuthHandler(ctx gssh.Context, key gssh.PublicKey) bool {
 	identity, err := b.Authenticator(ctx, key)
 	if err != nil {
 		return false
 	}
 	ctx.SetValue("ssh-identity", identity)
 	return true
-}
-
-func (b *Sshebra) ListenAndServe() error {
-	return gssh.ListenAndServe(
-		b.ListenAddr,
-		b.handler,
-		gssh.HostKeyFile(b.ServerPrivateKeyPath),
-		gssh.PublicKeyAuth(b.authHandler),
-	)
 }
 
 func (b *Sshebra) RegisterCommand(name string, cmd commands.Command) {
